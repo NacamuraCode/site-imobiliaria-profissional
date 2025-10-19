@@ -6,12 +6,25 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import LoginModal from '@/components/LoginModal'
+import Dashboard from '@/components/Dashboard'
+import CartModal from '@/components/CartModal'
+import PropertyDetails from '@/components/PropertyDetails'
+import FavoritesPage from '@/components/FavoritesPage'
+import TransactionHistory from '@/components/TransactionHistory'
+import ProfileSettings from '@/components/ProfileSettings'
+import AboutPage from '@/components/AboutPage'
 
 export default function ImobiliariaHome() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [cartItems, setCartItems] = useState(0)
-  const [favorites, setFavorites] = useState<number[]>([])
+  const [cartItems, setCartItems] = useState<any[]>([])
+  const [favorites, setFavorites] = useState<number[]>([1, 3, 6])
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showCartModal, setShowCartModal] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [currentView, setCurrentView] = useState('home')
+  const [selectedProperty, setSelectedProperty] = useState<any>(null)
 
   const imoveis = [
     {
@@ -97,13 +110,58 @@ export default function ImobiliariaHome() {
   }
 
   const addToCart = (id: number) => {
-    setCartItems(prev => prev + 1)
+    const imovel = imoveis.find(item => item.id === id)
+    if (imovel) {
+      const cartItem = {
+        id: imovel.id,
+        title: imovel.titulo,
+        price: imovel.preco,
+        address: imovel.endereco,
+        image: imovel.imagem,
+        quantity: 1,
+        type: "Compra"
+      }
+      
+      setCartItems(prev => {
+        const existingItem = prev.find(item => item.id === id)
+        if (existingItem) {
+          return prev.map(item =>
+            item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+          )
+        }
+        return [...prev, cartItem]
+      })
+    }
+
     // Animação do botão
     const button = document.getElementById(`cart-btn-${id}`)
     if (button) {
       button.classList.add('animate-pulse')
       setTimeout(() => button.classList.remove('animate-pulse'), 600)
     }
+  }
+
+  const handleLogin = (userData: any) => {
+    setUser(userData)
+    setShowLoginModal(false)
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    setCurrentView('home')
+  }
+
+  const openDashboard = () => {
+    if (user) {
+      setCurrentView('dashboard')
+    } else {
+      setShowLoginModal(true)
+    }
+  }
+
+  const viewPropertyDetails = (property: any) => {
+    setSelectedProperty(property)
+    setCurrentView('property-details')
   }
 
   const formatPrice = (price: number) => {
@@ -113,6 +171,51 @@ export default function ImobiliariaHome() {
     }).format(price)
   }
 
+  // Render different views based on currentView
+  if (currentView === 'dashboard' && user) {
+    return <Dashboard user={user} onLogout={handleLogout} />
+  }
+
+  if (currentView === 'property-details' && selectedProperty) {
+    return (
+      <PropertyDetails
+        property={selectedProperty}
+        onBack={() => setCurrentView('home')}
+        onAddToCart={addToCart}
+        onToggleFavorite={toggleFavorite}
+        isFavorite={favorites.includes(selectedProperty.id)}
+      />
+    )
+  }
+
+  if (currentView === 'favorites') {
+    return (
+      <FavoritesPage
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
+        onViewProperty={viewPropertyDetails}
+        onAddToCart={addToCart}
+      />
+    )
+  }
+
+  if (currentView === 'transactions' && user) {
+    return <TransactionHistory user={user} />
+  }
+
+  if (currentView === 'profile' && user) {
+    return (
+      <ProfileSettings
+        user={user}
+        onUpdateUser={setUser}
+      />
+    )
+  }
+
+  if (currentView === 'about') {
+    return <AboutPage onBack={() => setCurrentView('home')} />
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -120,7 +223,7 @@ export default function ImobiliariaHome() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setCurrentView('home')}>
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
                 <MapPin className="w-6 h-6 text-white" />
               </div>
@@ -131,9 +234,24 @@ export default function ImobiliariaHome() {
 
             {/* Navigation Desktop */}
             <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium">Início</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium">Imóveis</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium">Sobre</a>
+              <button 
+                onClick={() => setCurrentView('home')}
+                className={`transition-colors duration-300 font-medium ${currentView === 'home' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+              >
+                Início
+              </button>
+              <button 
+                onClick={() => setCurrentView('favorites')}
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium"
+              >
+                Favoritos ({favorites.length})
+              </button>
+              <button 
+                onClick={() => setCurrentView('about')}
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium"
+              >
+                Sobre
+              </button>
               <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 font-medium">Contato</a>
             </nav>
 
@@ -143,30 +261,91 @@ export default function ImobiliariaHome() {
                 variant="ghost" 
                 size="sm"
                 className="relative hover:bg-blue-50 transition-all duration-300"
+                onClick={() => setShowCartModal(true)}
               >
                 <ShoppingCart className="w-5 h-5" />
-                {cartItems > 0 && (
+                {cartItems.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-bounce">
-                    {cartItems}
+                    {cartItems.reduce((total, item) => total + item.quantity, 0)}
                   </Badge>
                 )}
               </Button>
               
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="hidden sm:flex hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Entrar
-              </Button>
+              {user ? (
+                <>
+                  <div className="hidden sm:flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+                      onClick={openDashboard}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {user.name.split(' ')[0]}
+                    </Button>
+                    
+                    {/* User Dropdown Menu */}
+                    <div className="relative group">
+                      <Button variant="ghost" size="sm" className="p-1">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">
+                            {user.name.charAt(0)}
+                          </span>
+                        </div>
+                      </Button>
+                      
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <div className="py-2">
+                          <button
+                            onClick={openDashboard}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Dashboard
+                          </button>
+                          <button
+                            onClick={() => setCurrentView('profile')}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Perfil
+                          </button>
+                          <button
+                            onClick={() => setCurrentView('transactions')}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Histórico
+                          </button>
+                          <hr className="my-1" />
+                          <button
+                            onClick={handleLogout}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Sair
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="hidden sm:flex hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+                    onClick={() => setShowLoginModal(true)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Entrar
+                  </Button>
 
-              <Button 
-                size="sm"
-                className="hidden sm:flex bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105"
-              >
-                Cadastrar
-              </Button>
+                  <Button 
+                    size="sm"
+                    className="hidden sm:flex bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105"
+                    onClick={() => setShowLoginModal(true)}
+                  >
+                    Cadastrar
+                  </Button>
+                </>
+              )}
 
               {/* Mobile Menu Button */}
               <Button
@@ -184,13 +363,51 @@ export default function ImobiliariaHome() {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t animate-in slide-in-from-top-2 duration-300">
               <nav className="flex flex-col space-y-3">
-                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2">Início</a>
-                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2">Imóveis</a>
-                <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2">Sobre</a>
+                <button 
+                  onClick={() => {setCurrentView('home'); setIsMenuOpen(false)}}
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2 text-left"
+                >
+                  Início
+                </button>
+                <button 
+                  onClick={() => {setCurrentView('favorites'); setIsMenuOpen(false)}}
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2 text-left"
+                >
+                  Favoritos ({favorites.length})
+                </button>
+                <button 
+                  onClick={() => {setCurrentView('about'); setIsMenuOpen(false)}}
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2 text-left"
+                >
+                  Sobre
+                </button>
                 <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-300 py-2">Contato</a>
                 <div className="flex flex-col space-y-2 pt-4 border-t">
-                  <Button variant="outline" size="sm">Entrar</Button>
-                  <Button size="sm" className="bg-gradient-to-r from-blue-600 to-cyan-500">Cadastrar</Button>
+                  {user ? (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => {openDashboard(); setIsMenuOpen(false)}}>
+                        Dashboard
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => {setCurrentView('profile'); setIsMenuOpen(false)}}>
+                        Perfil
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => {setCurrentView('transactions'); setIsMenuOpen(false)}}>
+                        Histórico
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => {handleLogout(); setIsMenuOpen(false)}}>
+                        Sair
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => {setShowLoginModal(true); setIsMenuOpen(false)}}>
+                        Entrar
+                      </Button>
+                      <Button size="sm" className="bg-gradient-to-r from-blue-600 to-cyan-500" onClick={() => {setShowLoginModal(true); setIsMenuOpen(false)}}>
+                        Cadastrar
+                      </Button>
+                    </>
+                  )}
                 </div>
               </nav>
             </div>
@@ -283,7 +500,8 @@ export default function ImobiliariaHome() {
                   <img
                     src={imovel.imagem}
                     alt={imovel.titulo}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
+                    onClick={() => viewPropertyDetails(imovel)}
                   />
                   {imovel.destaque && (
                     <Badge className="absolute top-3 left-3 bg-gradient-to-r from-orange-500 to-red-500 text-white">
@@ -317,7 +535,10 @@ export default function ImobiliariaHome() {
                     </span>
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                  <h3 
+                    className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300 cursor-pointer"
+                    onClick={() => viewPropertyDetails(imovel)}
+                  >
                     {imovel.titulo}
                   </h3>
                   
@@ -348,6 +569,7 @@ export default function ImobiliariaHome() {
                   <Button 
                     variant="outline" 
                     className="flex-1 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+                    onClick={() => viewPropertyDetails(imovel)}
                   >
                     Ver Detalhes
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -388,6 +610,7 @@ export default function ImobiliariaHome() {
               size="lg" 
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105 px-8"
+              onClick={openDashboard}
             >
               Anunciar Imóvel
             </Button>
@@ -414,9 +637,9 @@ export default function ImobiliariaHome() {
             <div>
               <h3 className="font-semibold mb-4">Navegação</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors duration-300">Início</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-300">Imóveis</a></li>
-                <li><a href="#" className="hover:text-white transition-colors duration-300">Sobre</a></li>
+                <li><button onClick={() => setCurrentView('home')} className="hover:text-white transition-colors duration-300">Início</button></li>
+                <li><button onClick={() => setCurrentView('favorites')} className="hover:text-white transition-colors duration-300">Favoritos</button></li>
+                <li><button onClick={() => setCurrentView('about')} className="hover:text-white transition-colors duration-300">Sobre</button></li>
                 <li><a href="#" className="hover:text-white transition-colors duration-300">Contato</a></li>
               </ul>
             </div>
@@ -446,6 +669,20 @@ export default function ImobiliariaHome() {
           </div>
         </div>
       </footer>
+
+      {/* Modals */}
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleLogin}
+      />
+      
+      <CartModal 
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        cartItems={cartItems}
+        onUpdateCart={setCartItems}
+      />
     </div>
   )
 }
