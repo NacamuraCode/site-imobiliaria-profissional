@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { User, Mail, Phone, MapPin, Camera, Save, Edit, Shield, Bell, CreditCard, Key, Globe, Moon, Sun } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Camera, Save, Edit, Shield, Bell, CreditCard, Key, Globe, Moon, Sun, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -16,9 +16,10 @@ import { Badge } from '@/components/ui/badge'
 interface ProfileSettingsProps {
   user: any
   onUpdateUser: (userData: any) => void
+  onBack?: () => void
 }
 
-export default function ProfileSettings({ user, onUpdateUser }: ProfileSettingsProps) {
+export default function ProfileSettings({ user, onUpdateUser, onBack }: ProfileSettingsProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     name: user?.name || 'João Silva',
@@ -63,6 +64,18 @@ export default function ProfileSettings({ user, onUpdateUser }: ProfileSettingsP
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center h-16">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center space-x-2 mr-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">

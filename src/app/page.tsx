@@ -195,12 +195,13 @@ export default function ImobiliariaHome() {
         onToggleFavorite={toggleFavorite}
         onViewProperty={viewPropertyDetails}
         onAddToCart={addToCart}
+        onBack={() => setCurrentView('home')}
       />
     )
   }
 
   if (currentView === 'transactions' && user) {
-    return <TransactionHistory user={user} />
+    return <TransactionHistory user={user} onBack={() => setCurrentView('home')} />
   }
 
   if (currentView === 'profile' && user) {
@@ -208,6 +209,7 @@ export default function ImobiliariaHome() {
       <ProfileSettings
         user={user}
         onUpdateUser={setUser}
+        onBack={() => setCurrentView('home')}
       />
     )
   }

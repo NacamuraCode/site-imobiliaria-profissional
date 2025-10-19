@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Calendar, MapPin, DollarSign, CheckCircle, Clock, AlertCircle, Eye, Download, MessageCircle, Star } from 'lucide-react'
+import { Calendar, MapPin, DollarSign, CheckCircle, Clock, AlertCircle, Eye, Download, MessageCircle, Star, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,9 +12,10 @@ import { Separator } from '@/components/ui/separator'
 
 interface TransactionHistoryProps {
   user: any
+  onBack?: () => void
 }
 
-export default function TransactionHistory({ user }: TransactionHistoryProps) {
+export default function TransactionHistory({ user, onBack }: TransactionHistoryProps) {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterPeriod, setFilterPeriod] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -153,6 +154,18 @@ export default function TransactionHistory({ user }: TransactionHistoryProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center h-16">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center space-x-2 mr-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -411,7 +424,10 @@ export default function TransactionHistory({ user }: TransactionHistoryProps) {
               }
             </p>
             {!(searchTerm || filterStatus !== 'all' || filterPeriod !== 'all') && (
-              <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600">
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+                onClick={onBack}
+              >
                 Explorar Imóveis
               </Button>
             )}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Heart, MapPin, Bed, Bath, Square, Trash2, Share2, Eye, Filter, SortAsc } from 'lucide-react'
+import { Heart, MapPin, Bed, Bath, Square, Trash2, Share2, Eye, Filter, SortAsc, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,9 +13,10 @@ interface FavoritesPageProps {
   onToggleFavorite: (id: number) => void
   onViewProperty: (property: any) => void
   onAddToCart: (id: number) => void
+  onBack?: () => void
 }
 
-export default function FavoritesPage({ favorites, onToggleFavorite, onViewProperty, onAddToCart }: FavoritesPageProps) {
+export default function FavoritesPage({ favorites, onToggleFavorite, onViewProperty, onAddToCart, onBack }: FavoritesPageProps) {
   const [sortBy, setSortBy] = useState('recent')
   const [filterType, setFilterType] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -94,6 +95,18 @@ export default function FavoritesPage({ favorites, onToggleFavorite, onViewPrope
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center h-16">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center space-x-2 mr-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -119,7 +132,10 @@ export default function FavoritesPage({ favorites, onToggleFavorite, onViewPrope
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
               Comece a explorar nossos imóveis e salve seus favoritos clicando no ícone de coração.
             </p>
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600">
+            <Button 
+              className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+              onClick={onBack}
+            >
               Explorar Imóveis
             </Button>
           </div>
